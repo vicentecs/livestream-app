@@ -49,7 +49,7 @@ services:
     networks:
       - livestream-net
     ports:
-      - "8080:8080"
+      - "localhost:8080:8080"
 
   cloudflared:
     image: cloudflare/cloudflared:latest

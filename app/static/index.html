@@ -245,6 +245,15 @@ async function loadTitlePlaceholder() {
   }
 }
 
+async function safeJson(r) {
+  const ct = r.headers.get("content-type") || "";
+  if (!ct.includes("application/json")) {
+    const text = await r.text();
+    return { _nonJson: true, status: r.status, snippet: text.slice(0, 120) };
+  }
+  try { return await r.json(); } catch { return { _parseError: true }; }
+}
+
 async function startLive() {
   const btn = $("start-btn");
   btn.disabled = true; btn.textContent = "Iniciando...";
@@ -258,9 +267,13 @@ async function startLive() {
         privacy: $("privacy").value,
       }),
     });
-    const data = await r.json();
+    const data = await safeJson(r);
     if (!r.ok) {
-      showError(data.detail?.message || data.message || "Falha ao iniciar");
+      if (data._nonJson) {
+        showError(`Gateway erro ${data.status}. Servidor indisponível.`);
+      } else {
+        showError(data.detail?.message || data.message || `Falha ao iniciar (HTTP ${r.status})`);
+      }
     }
   } catch (e) {
     showError(e.message);
@@ -276,8 +289,12 @@ async function stopLive() {
   try {
     const r = await fetch("/live/stop", {method: "POST"});
     if (!r.ok) {
-      const data = await r.json();
-      showError(data.detail?.message || "Falha ao encerrar");
+      const data = await safeJson(r);
+      if (data._nonJson) {
+        showError(`Gateway erro ${data.status}. Servidor indisponível.`);
+      } else {
+        showError(data.detail?.message || `Falha ao encerrar (HTTP ${r.status})`);
+      }
     }
   } catch (e) {
     showError(e.message);

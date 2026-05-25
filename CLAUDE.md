@@ -162,18 +162,19 @@ Todas definidas no `.env` (nunca commitar). Ver `.env.example` como referência.
 ## Fluxo da live — sequência obrigatória
 
 ```
-1. liveBroadcasts.insert        → cria broadcast, obtém broadcast_id
+1. liveBroadcasts.insert        → cria broadcast (monitorStream=false), obtém broadcast_id
 2. liveStreams.insert            → cria stream, obtém stream_id + stream_key
 3. liveBroadcasts.bind          → vincula broadcast + stream
 4. Restreamer: configurar       → passa stream_key, inicia FFmpeg
-5. liveBroadcasts.transition    → status: "testing"
-6. aguardar streamStatus=active → polling até câmera conectar
-7. liveBroadcasts.transition    → status: "live"
+5. aguardar streamStatus=active → polling até câmera conectar
+6. liveBroadcasts.transition    → status: "live"
 
 Encerramento:
-8. Restreamer: parar            → FFmpeg encerrado
-9. liveBroadcasts.transition    → status: "complete"
+7. Restreamer: parar            → FFmpeg encerrado
+8. liveBroadcasts.transition    → status: "complete"
 ```
+
+> ⚠️ Transição `"testing"` NÃO é usada. Broadcast é criado com `monitorStream.enableMonitorStream=false`, então YouTube vai direto de `ready` → `live`. Chamar `transition("testing")` nessa config retorna `403 invalidTransition`. Para habilitar fase de testing, ligar monitor stream no insert e adicionar transição antes do `live`.
 
 ---
 

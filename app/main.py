@@ -139,7 +139,6 @@ async def live_start(
     try:
         broadcast = await youtube.create_broadcast(user, req)
         await restreamer.start(broadcast.stream_key)
-        await youtube.transition(user, broadcast.broadcast_id, "testing")
 
         active = await youtube.wait_active(user, broadcast.stream_id, timeout=60.0, interval=3.0)
         if not active:

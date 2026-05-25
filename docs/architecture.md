@@ -38,12 +38,12 @@ O Restreamer resolve a camada de gerenciamento do processo FFmpeg com API REST, 
 │  │  cloudflared   │         │     restreamer       │ │
 │  │                │         │  datarhei/rpi-latest │ │
 │  │  tunnel token  │         │  porta interna: 8080 │ │
-│  └───────┬────────┘         │  porta host:   1935  │ │
+│  └───────┬────────┘         │  (não exposta host)  │ │
 │          │                  └──────────┬───────────┘ │
-│          │ http://app:3000             │ :8080        │
-│          ▼                            │              │
-│  ┌────────────────┐                   │              │
-│  │      app       │───────────────────┘              │
+│          │ http://app:3000             │             │
+│          ▼                             │             │
+│  ┌────────────────┐                    │             │
+│  │      app       │────────────────────┘             │
 │  │  FastAPI :3000 │  http://restreamer:8080          │
 │  │  porta host:   │                                  │
 │  │  3000          │                                  │
@@ -52,10 +52,13 @@ O Restreamer resolve a camada de gerenciamento do processo FFmpeg com API REST, 
 
 Portas expostas ao host/internet:
   :3000  → interface web (apenas rede local, ou via tunnel)
-  :1935  → RTMP saída para YouTube (direto, sem tunnel)
 
 Portas internas apenas:
   :8080  → UI e API do Restreamer (não acessível externamente)
+
+Saída para YouTube:
+  RTMP egress do container restreamer → rtmp://a.rtmp.youtube.com/live2
+  (conexão de saída, não precisa porta exposta no host)
 ```
 
 ---

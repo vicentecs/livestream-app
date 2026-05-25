@@ -1,11 +1,11 @@
 # Livestream Orchestrator
 
-Sistema de live streaming multi-usuário para Raspberry Pi 3B+. Captura vídeo RTSP H.265 de câmera IP e transmite ao vivo no YouTube, com autenticação Google OAuth e controle via interface web.
+Sistema de live streaming multi-usuário para Raspberry Pi 3B+. Captura vídeo RTSP H.264 de câmera IP e transmite ao vivo no YouTube via remux (sem re-encode), com autenticação Google OAuth e controle via interface web.
 
 ## Visão geral
 
 ```
-Câmera IP (H.265 RTSP)
+Câmera IP (H.264 RTSP)
         │
         ▼
   Raspberry Pi 3B+
@@ -13,10 +13,10 @@ Câmera IP (H.265 RTSP)
   │  Docker Compose                     │
   │                                     │
   │  ┌─────────────┐  ┌─────────────┐  │
-  │  │  Orquestrador│  │ Restreamer  │  │
+  │  │ Orquestrador│  │ Restreamer  │  │
   │  │  FastAPI    │──│  FFmpeg     │  │
-  │  │  OAuth      │  │  RTSP→RTMP  │  │
-  │  │  YouTube API│  │             │  │
+  │  │  OAuth      │  │  remux      │  │
+  │  │  YouTube API│  │  -c copy    │  │
   │  └─────────────┘  └──────┬──────┘  │
   │         ▲                │         │
   │  Cloudflare              ▼         │
@@ -41,7 +41,7 @@ Câmera IP (H.265 RTSP)
 
 - Raspberry Pi 3B+ com Debian 12 (Bookworm)
 - Docker e Docker Compose instalados
-- Câmera IP com stream RTSP H.265
+- Câmera IP com stream RTSP H.264 (Baseline, Main ou High até nível 4.2)
 - Conta Google com canal YouTube habilitado para live
 - Projeto configurado no Google Cloud Console
 - Domínio com Cloudflare (para o Tunnel)

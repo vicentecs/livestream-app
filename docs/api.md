@@ -159,13 +159,16 @@ Retorna configuração atual (sem dados sensíveis).
 ```json
 {
   "rtsp_url_masked": "rtsp://***@192.168.1.50:554/stream",
-  "ffmpeg_preset": "ultrafast",
-  "resolution": "1280x720",
-  "video_bitrate_kbps": 2500,
-  "audio_bitrate_kbps": 128,
-  "framerate": 25
+  "pipeline_mode": "remux",
+  "video_codec": "h264",
+  "video_profile": "Main",
+  "video_level": "4.0",
+  "audio_codec": "aac",
+  "container_output": "flv"
 }
 ```
+
+Modo `remux` indica `-c:v copy -c:a copy` — não há preset, bitrate ou resolução configuráveis; tudo é definido pela câmera.
 
 ---
 

@@ -1,0 +1,70 @@
+name: livestream
+
+services:
+  app:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    image: ${DOCKER_IMAGE:-livestream-app:local}
+    container_name: livestream-app
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      APP_SECRET_KEY: ${APP_SECRET_KEY}
+      APP_PUBLIC_URL: ${APP_PUBLIC_URL}
+      RESTREAMER_URL: ${RESTREAMER_URL:-http://restreamer:8080}
+      RESTREAMER_USER: ${RESTREAMER_USER}
+      RESTREAMER_PASS: ${RESTREAMER_PASS}
+      RTSP_URL: ${RTSP_URL}
+      CHANNEL_PREFIX: ${CHANNEL_PREFIX:-}
+      COURT_NUMBER: ${COURT_NUMBER:-}
+    volumes:
+      - ./app/data:/app/data
+    depends_on:
+      - restreamer
+    networks:
+      - livestream-net
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:3000/health', timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  restreamer:
+    image: datarhei/restreamer:latest
+    container_name: livestream-restreamer
+    restart: always
+    environment:
+      RS_USERNAME: ${RESTREAMER_USER}
+      RS_PASSWORD: ${RESTREAMER_PASS}
+      CORE_API_AUTH_USERNAME: ${RESTREAMER_USER}
+      CORE_API_AUTH_PASSWORD: ${RESTREAMER_PASS}
+    volumes:
+      - restreamer-config:/core/config
+      - restreamer-data:/core/data
+    networks:
+      - livestream-net
+    ports:
+      - "8080:8080"
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: livestream-cloudflared
+    restart: always
+    command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN}
+    depends_on:
+      - app
+    networks:
+      - livestream-net
+
+networks:
+  livestream-net:
+    driver: bridge
+
+volumes:
+  restreamer-config:
+  restreamer-data:

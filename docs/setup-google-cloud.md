@@ -1,5 +1,7 @@
 # Setup Google Cloud Console
 
+[← Voltar ao README](../README.md)
+
 Configuração única — feita uma vez pelo administrador do sistema.
 
 ---
@@ -95,3 +97,8 @@ O usuário já poderá fazer login imediatamente — sem necessidade de reinicia
 - Máximo de **100 usuários de teste** no modo não verificado
 - O app em modo de teste expira após **6 meses de inatividade** por usuário — o refresh token é revogado e o usuário precisa fazer login novamente
 - O aviso "App não verificado" aparece no login — o usuário deve clicar em **Avançado → Acessar (nome do app)** para continuar
+
+---
+
+_Última revisão: 2026-05-25._
+

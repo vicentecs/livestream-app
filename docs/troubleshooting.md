@@ -1,5 +1,24 @@
 # Troubleshooting
 
+[← Voltar ao README](../README.md)
+
+Soluções para problemas frequentes em produção.
+
+## Sumário
+
+- [App não sobe / container em loop](#app-não-sobe--container-em-loop)
+- [Login Google falha — "redirect_uri_mismatch"](#login-google-falha--redirect_uri_mismatch)
+- [Login Google falha — "Access blocked: app not verified"](#login-google-falha--access-blocked-app-not-verified)
+- [Refresh token inválido / usuário precisa logar sempre](#refresh-token-inválido--usuário-precisa-logar-sempre)
+- [Live inicia mas não aparece no YouTube](#live-inicia-mas-não-aparece-no-youtube)
+- [Câmera RTSP não conecta](#câmera-rtsp-não-conecta)
+- [Alta temperatura no Pi / throttle](#alta-temperatura-no-pi--throttle)
+- [Stream trava como "ocupado" sem live ativa](#stream-trava-como-ocupado-sem-live-ativa)
+- [Tunnel Cloudflare não conecta](#tunnel-cloudflare-não-conecta)
+- [Atualizar para nova versão](#atualizar-para-nova-versão)
+
+> Se nenhum cenário cobrir seu problema, abra uma issue — ver [CONTRIBUTING.md#reportar-bugs](../CONTRIBUTING.md#reportar-bugs).
+
 ---
 
 ## App não sobe / container em loop
@@ -172,3 +191,8 @@ Para verificar qual versão está rodando:
 ```bash
 docker inspect livestream-app | grep Image
 ```
+
+---
+
+_Última revisão: 2026-05-25._
+

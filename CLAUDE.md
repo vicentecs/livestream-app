@@ -8,8 +8,8 @@ Contexto permanente do projeto para Claude Code. Leia este arquivo antes de qual
 
 Sistema de live streaming que captura vídeo RTSP H.264 de câmera IP e transmite ao vivo no YouTube. Roda em um **Raspberry Pi 3B+ com Debian 12 (armhf)**. Múltiplos usuários autenticam com Google OAuth e iniciam lives em seus próprios canais do YouTube. O controle é feito via interface web acessível localmente e pela internet via Cloudflare Tunnel.
 
-**Repositório:** github.com/usuario/
-**Imagem Docker:** usuario/livestream-app (Docker Hub)
+**Repositório:** github.com/vicentecs/livestream-app
+**Imagem Docker:** vicentecs/livestream-app (Docker Hub)
 **Documentação completa:** ver `docs/`
 
 ---

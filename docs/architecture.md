@@ -1,5 +1,7 @@
 # Arquitetura do Sistema
 
+[← Voltar ao README](../README.md)
+
 ## Decisões técnicas
 
 ### Por que FastAPI e não Flask ou Django?
@@ -181,3 +183,8 @@ if token_expiry < now + timedelta(minutes=5):
 ```
 
 O `refresh_token` não expira, mas é revogado se o usuário remover o acesso em myaccount.google.com ou se o app ficar inativo por 6 meses (limite do Google para apps em modo de teste).
+
+---
+
+_Última revisão: 2026-05-25._
+

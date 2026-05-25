@@ -1,6 +1,8 @@
 # Livestream Orchestrator
 
-Sistema de live streaming multi-usuário para Raspberry Pi 3B+. Captura vídeo RTSP H.264 de câmera IP e transmite ao vivo no YouTube via remux (sem re-encode), com autenticação Google OAuth e controle via interface web.
+> 🚧 Em desenvolvimento — docs prontas, código em andamento.
+
+Sistema pessoal de live streaming para Raspberry Pi 3B+. Captura RTSP H.264 da câmera IP e transmite no YouTube via remux (sem re-encode), com login Google OAuth e controle via web.
 
 ## Visão geral
 
@@ -24,75 +26,71 @@ Câmera IP (H.264 RTSP)
   └─────────────────────────────────────┘
         │
         ▼
-  Browser (usuário)
+  Browser
   https://live.seudominio.com
 ```
 
-## Funcionalidades
+Detalhes em [docs/architecture.md](docs/architecture.md).
 
-- Login com conta Google (OAuth 2.0)
-- Criação automática de live no YouTube via API
-- Controle de start/stop pela interface web
-- Suporte a múltiplos usuários (um encoder por vez)
-- Acessível localmente e pela internet via Cloudflare Tunnel
-- CI/CD automático via GitHub Actions → Docker Hub
+## Pré-requisitos
 
-## Requisitos
+| Item | Versão |
+|---|---|
+| Hardware | Raspberry Pi 3B+ (armhf) |
+| SO | Debian 12 Bookworm |
+| Docker | ≥ 24 + Compose V2 |
+| Câmera IP | RTSP H.264 (Baseline/Main/High até nível 4.2) |
+| Conta Google | Canal YouTube + projeto Google Cloud OAuth |
+| Domínio Cloudflare | Tunnel configurado |
 
-- Raspberry Pi 3B+ com Debian 12 (Bookworm)
-- Docker e Docker Compose instalados
-- Câmera IP com stream RTSP H.264 (Baseline, Main ou High até nível 4.2)
-- Conta Google com canal YouTube habilitado para live
-- Projeto configurado no Google Cloud Console
-- Domínio com Cloudflare (para o Tunnel)
+Setup OAuth: [docs/setup-google-cloud.md](docs/setup-google-cloud.md).
 
-## Instalação rápida
+## Instalação
 
 ```bash
-# 1. Clonar o repositório
-git clone https://github.com/usuario/livestream-app.git
+git clone <repo>
 cd livestream-app
-
-# 2. Configurar variáveis de ambiente
 cp .env.example .env
-nano .env  # preencher todas as variáveis
-
-# 3. Subir a stack
+nano .env                    # preencher tudo
 docker compose up -d
-
-# 4. Verificar status
-docker compose ps
 docker compose logs -f app
 ```
 
-Acesse `http://IP-DO-PI:3000` ou `https://live.seudominio.com`.
+Passo a passo completo no Pi: [docs/setup-raspberry.md](docs/setup-raspberry.md).
+
+Acesso: `http://IP-DO-PI:3000` ou `https://live.seudominio.com`.
+
+## Variáveis de ambiente
+
+Todas obrigatórias. Ver [.env.example](.env.example).
+
+| Variável | Origem |
+|---|---|
+| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Google Cloud Console |
+| `APP_SECRET_KEY` | `python3 -c "import secrets; print(secrets.token_hex(32))"` |
+| `APP_PUBLIC_URL` | URL do Cloudflare Tunnel (sem barra final) |
+| `RESTREAMER_URL` | Sempre `http://restreamer:8080` |
+| `RESTREAMER_USER` / `RESTREAMER_PASS` | Admin do Restreamer |
+| `RTSP_URL` | URL RTSP da câmera |
+| `CLOUDFLARE_TUNNEL_TOKEN` | Cloudflare Zero Trust → Tunnels |
+
+## Comandos úteis
+
+```bash
+docker compose ps
+docker compose logs -f app
+docker compose restart app                  # libera lock preso
+docker compose pull && docker compose up -d # atualizar
+watch -n 2 vcgencmd measure_temp            # temperatura Pi
+vcgencmd get_throttled                      # 0x0 = ok
+```
 
 ## Documentação
 
-| Documento | Descrição |
+| Doc | Conteúdo |
 |---|---|
-| [Arquitetura](docs/architecture.md) | Decisões técnicas e diagramas |
-| [API Reference](docs/api.md) | Rotas FastAPI |
-| [Setup Google Cloud](docs/setup-google-cloud.md) | Configurar OAuth e YouTube API |
-| [Setup Raspberry Pi](docs/setup-raspberry.md) | Instalação completa no Pi |
-| [Troubleshooting](docs/troubleshooting.md) | Problemas comuns |
-
-## Desenvolvimento
-
-```bash
-# Build local
-docker compose build app
-
-# Logs em tempo real
-docker compose logs -f
-
-# Shell na app
-docker compose exec app bash
-
-# Atualizar no Pi após deploy
-docker compose pull && docker compose up -d
-```
-
-## Licença
-
-MIT
+| [docs/architecture.md](docs/architecture.md) | Decisões técnicas, diagramas, fluxos |
+| [docs/setup-google-cloud.md](docs/setup-google-cloud.md) | OAuth + YouTube API |
+| [docs/setup-raspberry.md](docs/setup-raspberry.md) | Instalação no Pi |
+| [docs/troubleshooting.md](docs/troubleshooting.md) | Problemas comuns |
+| [CLAUDE.md](CLAUDE.md) | Contexto para Claude Code |

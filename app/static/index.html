@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Livestream Orchestrator</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --panel: #181b22;
+    --border: #2a2f3a;
+    --text: #e6e8ec;
+    --muted: #8a93a3;
+    --accent: #4f8cff;
+    --danger: #ff4f6e;
+    --success: #2ecc71;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg); color: var(--text); min-height: 100vh;
+  }
+  .container { max-width: 720px; margin: 0 auto; padding: 32px 20px; }
+  header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 32px; padding-bottom: 16px; border-bottom: 1px solid var(--border);
+  }
+  h1 { font-size: 20px; margin: 0; }
+  .user-info { display: flex; align-items: center; gap: 12px; font-size: 14px; color: var(--muted); }
+  .user-info img { width: 32px; height: 32px; border-radius: 50%; }
+  button {
+    border: none; border-radius: 6px; padding: 10px 16px;
+    font-size: 14px; font-weight: 500; cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+  button.primary { background: var(--accent); color: white; }
+  button.danger { background: var(--danger); color: white; }
+  button.ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+  .panel {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 8px; padding: 24px; margin-bottom: 16px;
+  }
+  .panel h2 { margin: 0 0 16px 0; font-size: 16px; font-weight: 600; }
+  .status-row {
+    display: flex; justify-content: space-between; padding: 8px 0;
+    border-bottom: 1px solid var(--border); font-size: 14px;
+  }
+  .status-row:last-child { border-bottom: none; }
+  .status-row .label { color: var(--muted); }
+  .status-row .value { font-family: monospace; }
+  .badge {
+    display: inline-block; padding: 2px 8px; border-radius: 4px;
+    font-size: 12px; font-weight: 500;
+  }
+  .badge.live { background: var(--danger); color: white; }
+  .badge.idle { background: var(--border); color: var(--muted); }
+  .badge.busy { background: #d97706; color: white; }
+  .form-group { margin-bottom: 12px; }
+  label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+  input, select, textarea {
+    width: 100%; padding: 8px 12px; background: var(--bg);
+    border: 1px solid var(--border); border-radius: 6px;
+    color: var(--text); font-family: inherit; font-size: 14px;
+  }
+  .actions { display: flex; gap: 8px; margin-top: 16px; }
+  .youtube-link {
+    display: inline-block; margin-top: 8px;
+    color: var(--accent); text-decoration: none; font-family: monospace; font-size: 13px;
+  }
+  .youtube-link:hover { text-decoration: underline; }
+  .error { background: rgba(255,79,110,0.15); color: var(--danger); padding: 12px; border-radius: 6px; font-size: 14px; margin-bottom: 16px; }
+  .muted { color: var(--muted); font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <h1>🎥 Livestream Orchestrator</h1>
+    <div id="user-area"></div>
+  </header>
+
+  <div id="error-area"></div>
+
+  <div class="panel">
+    <h2>Estado</h2>
+    <div class="status-row">
+      <span class="label">Stream</span>
+      <span class="value"><span id="lock-badge" class="badge idle">idle</span></span>
+    </div>
+    <div class="status-row">
+      <span class="label">Usuário ativo</span>
+      <span class="value" id="active-user">—</span>
+    </div>
+    <div class="status-row">
+      <span class="label">Broadcast</span>
+      <span class="value" id="broadcast-id">—</span>
+    </div>
+    <div class="status-row">
+      <span class="label">Uptime</span>
+      <span class="value" id="uptime">—</span>
+    </div>
+    <div id="youtube-link-row"></div>
+  </div>
+
+  <div class="panel" id="control-panel" style="display:none">
+    <h2>Controle</h2>
+    <div id="not-live-controls">
+      <div class="form-group">
+        <label for="title">Título</label>
+        <input id="title" type="text" placeholder="" />
+      </div>
+      <div class="form-group">
+        <label for="description">Descrição (opcional)</label>
+        <textarea id="description" rows="2"></textarea>
+      </div>
+      <div class="form-group">
+        <label for="privacy">Privacidade</label>
+        <select id="privacy">
+          <option value="public">Pública</option>
+          <option value="unlisted" selected>Não listada</option>
+          <option value="private">Privada</option>
+        </select>
+      </div>
+      <div class="actions">
+        <button id="start-btn" class="primary">Iniciar live</button>
+      </div>
+      <p class="muted" id="start-hint" style="margin-top:12px"></p>
+    </div>
+    <div id="live-controls" style="display:none">
+      <p class="muted">Live em andamento. Clique para encerrar quando terminar.</p>
+      <div class="actions">
+        <button id="stop-btn" class="danger">Encerrar live</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" id="login-panel" style="display:none">
+    <h2>Acesso</h2>
+    <p class="muted">Faça login com sua conta Google cadastrada como testadora.</p>
+    <div class="actions">
+      <a href="/auth/login"><button class="primary">Entrar com Google</button></a>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+let currentState = null;
+
+function showError(msg) {
+  $("error-area").innerHTML = `<div class="error">${msg}</div>`;
+  setTimeout(() => { $("error-area").innerHTML = ""; }, 6000);
+}
+
+function fmtUptime(s) {
+  if (!s || s < 0) return "—";
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = s % 60;
+  return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(sec).padStart(2,"0")}`;
+}
+
+function render(state) {
+  currentState = state;
+
+  if (state.current_user) {
+    $("user-area").innerHTML = `
+      <div class="user-info">
+        <span>${state.current_user.name}</span>
+        <form method="POST" action="/auth/logout" style="margin:0">
+          <button type="submit" class="ghost">Sair</button>
+        </form>
+      </div>`;
+    $("login-panel").style.display = "none";
+    $("control-panel").style.display = "block";
+  } else {
+    $("user-area").innerHTML = "";
+    $("login-panel").style.display = "block";
+    $("control-panel").style.display = "none";
+  }
+
+  const lockBadge = $("lock-badge");
+  if (state.broadcast) {
+    lockBadge.textContent = "LIVE";
+    lockBadge.className = "badge live";
+  } else if (state.stream_locked) {
+    lockBadge.textContent = "ocupado";
+    lockBadge.className = "badge busy";
+  } else {
+    lockBadge.textContent = "idle";
+    lockBadge.className = "badge idle";
+  }
+
+  $("active-user").textContent = state.active_user || "—";
+  $("broadcast-id").textContent = state.broadcast?.broadcast_id || "—";
+  $("uptime").textContent = state.broadcast ? fmtUptime(state.broadcast.uptime_seconds) : "—";
+
+  if (state.broadcast?.youtube_url) {
+    $("youtube-link-row").innerHTML = `
+      <div class="status-row">
+        <span class="label">YouTube</span>
+        <a class="youtube-link" href="${state.broadcast.youtube_url}" target="_blank">${state.broadcast.youtube_url}</a>
+      </div>`;
+  } else {
+    $("youtube-link-row").innerHTML = "";
+  }
+
+  const isMine = state.current_user && state.active_user === state.current_user.email;
+  if (isMine && state.broadcast) {
+    $("not-live-controls").style.display = "none";
+    $("live-controls").style.display = "block";
+  } else {
+    $("not-live-controls").style.display = "block";
+    $("live-controls").style.display = "none";
+    const busyForOther = state.stream_locked && !isMine;
+    $("start-btn").disabled = busyForOther;
+    $("start-hint").textContent = busyForOther
+      ? `Stream em uso por ${state.active_user}.`
+      : "";
+  }
+}
+
+async function refresh() {
+  try {
+    const r = await fetch("/status");
+    if (!r.ok) throw new Error("status falhou");
+    render(await r.json());
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+async function loadTitlePlaceholder() {
+  try {
+    const r = await fetch("/config");
+    if (!r.ok) return;
+    const cfg = await r.json();
+    if (cfg.default_title) $("title").placeholder = cfg.default_title;
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+async function startLive() {
+  const btn = $("start-btn");
+  btn.disabled = true; btn.textContent = "Iniciando...";
+  try {
+    const r = await fetch("/live/start", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({
+        title: $("title").value || null,
+        description: $("description").value || null,
+        privacy: $("privacy").value,
+      }),
+    });
+    const data = await r.json();
+    if (!r.ok) {
+      showError(data.detail?.message || data.message || "Falha ao iniciar");
+    }
+  } catch (e) {
+    showError(e.message);
+  } finally {
+    btn.disabled = false; btn.textContent = "Iniciar live";
+    refresh();
+  }
+}
+
+async function stopLive() {
+  const btn = $("stop-btn");
+  btn.disabled = true; btn.textContent = "Encerrando...";
+  try {
+    const r = await fetch("/live/stop", {method: "POST"});
+    if (!r.ok) {
+      const data = await r.json();
+      showError(data.detail?.message || "Falha ao encerrar");
+    }
+  } catch (e) {
+    showError(e.message);
+  } finally {
+    btn.disabled = false; btn.textContent = "Encerrar live";
+    refresh();
+  }
+}
+
+function checkUrlError() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("error") === "auth_failed") {
+    showError("Falha no login com Google. Tente novamente.");
+    window.history.replaceState({}, "", "/");
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  checkUrlError();
+  $("start-btn").addEventListener("click", startLive);
+  $("stop-btn").addEventListener("click", stopLive);
+  refresh();
+  loadTitlePlaceholder();
+  setInterval(refresh, 5000);
+  setInterval(loadTitlePlaceholder, 60000);
+});
+</script>
+</body>
+</html>

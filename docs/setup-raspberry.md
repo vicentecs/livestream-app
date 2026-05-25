@@ -1,5 +1,7 @@
 # Setup do Raspberry Pi
 
+[← Voltar ao README](../README.md)
+
 Instalação completa do **Livestream Orchestrator** num Raspberry Pi 3B+ com Debian 12 Bookworm (armhf).
 
 Premissas:
@@ -198,3 +200,8 @@ Docker sobe no boot, Compose recupera os containers com `restart: always`.
 ## Problemas comuns
 
 Ver [troubleshooting.md](troubleshooting.md).
+
+---
+
+_Última revisão: 2026-05-25._
+

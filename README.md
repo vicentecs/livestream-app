@@ -47,8 +47,31 @@ Setup OAuth: [docs/setup-google-cloud.md](docs/setup-google-cloud.md).
 
 ## Instalação
 
+### Dependências
+
+Instalar Git e Docker (com plugin Compose) no Debian/Raspberry Pi OS:
+
 ```bash
-git clone <repo>
+# Git
+sudo apt update
+sudo apt install -y git
+
+# Docker Engine + Compose plugin (script oficial)
+curl -fsSL https://get.docker.com | sudo sh
+
+# Rodar docker sem sudo (relogar depois)
+sudo usermod -aG docker $USER
+
+# Verificar
+git --version
+docker --version
+docker compose version
+```
+
+### Deploy
+
+```bash
+git clone https://github.com/vicentecs/livestream-app
 cd livestream-app
 cp .env.example .env
 nano .env                    # preencher tudo
